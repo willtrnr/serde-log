@@ -1,22 +1,35 @@
 use serde::de;
 use std::{fmt, ops};
 
+#[inline]
 pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
 where
     D: de::Deserializer<'de>,
     T: de::Deserialize<'de>,
 {
-    T::deserialize(Wrapper::new(deserializer))
+    T::deserialize(Deserializer::new(deserializer))
 }
 
-struct Wrapper<A> {
+pub struct Deserializer;
+
+impl Deserializer {
+    #[inline]
+    pub fn new<'de, D>(deserializer: D) -> Wrapper<D>
+    where
+        D: de::Deserializer<'de>,
+    {
+        Wrapper::new(deserializer)
+    }
+}
+
+pub struct Wrapper<A> {
     inner: A,
     depth: u32,
 }
 
 impl<A> Wrapper<A> {
     #[inline]
-    pub fn new(inner: A) -> Self {
+    pub(crate) fn new(inner: A) -> Self {
         Self { inner, depth: 0 }
     }
 
